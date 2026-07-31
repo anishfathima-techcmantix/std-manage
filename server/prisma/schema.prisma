@@ -1,8 +1,27 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "./generated/prisma"
 }
 
 datasource db {
   provider = "mysql"
+}
+
+// 1. Dynamic Roles Enum
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+// 2. Base User Model (Only Auth Data)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("users")
 }

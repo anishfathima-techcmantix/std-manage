@@ -27,7 +27,5 @@ export async function createServer() {
     
     app.use(errorHandler);
 
-    // startSampleCron();
-
     return app;
 }
