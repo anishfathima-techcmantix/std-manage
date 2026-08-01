@@ -3,7 +3,7 @@ import express from "express";
 import { createServer } from "./index.ts";
 import { prisma } from "./config/db.ts";
 
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
 const __dirname = import.meta.dirname;
 const distPath = path.join(__dirname, "../client");
 

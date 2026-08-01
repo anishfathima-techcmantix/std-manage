@@ -11,23 +11,37 @@ export interface AuthenticatedRequest extends Request {
 export function authenticateUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!authHeader) {
         return res.status(401).json({
             success: false,
-            message: "Access Denied: Please log in first!",
+            message: "Authentication Failed: Missing Authorization Header! Please provide a Bearer Token.",
+        });
+    }
+
+    if (!authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({
+            success: false,
+            message: "Authentication Failed: Invalid Token Format! Authorization header must be 'Bearer <token>'.",
         });
     }
 
     const tokenString = authHeader.split(" ")[1];
 
+    if (!tokenString || tokenString.trim() === "") {
+        return res.status(401).json({
+            success: false,
+            message: "Authentication Failed: Bearer Token string is empty!",
+        });
+    }
+
     try {
         const decodedUserData = verifyUserToken(tokenString);
         req.currentUser = decodedUserData;
         next();
-    } catch (error) {
+    } catch (error: any) {
         return res.status(403).json({
             success: false,
-            message: "Invalid or expired token. Please log in again.",
+            message: "Authentication Failed: Token is invalid or has expired! Please log in again.",
         });
     }
 }
@@ -36,10 +50,17 @@ export function authenticateUser(req: AuthenticatedRequest, res: Response, next:
 export function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     const authenticatedUser = req.currentUser;
 
-    if (!authenticatedUser || authenticatedUser.role !== Role.ADMIN) {
+    if (!authenticatedUser) {
+        return res.status(401).json({
+            success: false,
+            message: "Access Denied: User authentication required before role authorization!",
+        });
+    }
+
+    if (authenticatedUser.role !== Role.ADMIN) {
         return res.status(403).json({
             success: false,
-            message: "Forbidden: Only Admins can perform this action!",
+            message: `Forbidden Action: Access denied! Your role is '${authenticatedUser.role}'. Only 'ADMIN' role can perform this operation.`,
         });
     }
 

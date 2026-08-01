@@ -4,24 +4,24 @@ import { createHashedPassword, verifyUserPassword, generateUserToken } from "../
 
 // Input data structure required for User Registration.
 export interface RegisterUserInput {
-    emailInput: string;
-    passwordInput: string;
-    roleInput?: Role;
+    email: string;
+    password: string;
+    role?: Role;
 }
 
 // Input data structure required for User Login.
 export interface LoginUserInput {
-    emailInput: string;
-    passwordInput: string;
+    email: string;
+    password: string;
 }
 
 // Registers a new user account in the database after checking duplicates and hashing the password.
 export async function registerUserAccount(userInput: RegisterUserInput) {
-    const { emailInput, passwordInput, roleInput } = userInput;
+    const { email, password, role } = userInput;
 
     // Check if a user with the same email already exists
     const existingUserAccount = await prisma.user.findUnique({
-        where: { email: emailInput }
+        where: { email: email }
     });
 
     if (existingUserAccount) {
@@ -29,15 +29,15 @@ export async function registerUserAccount(userInput: RegisterUserInput) {
     }
 
     // Encrypt plain text password
-    const encryptedPassword = await createHashedPassword(passwordInput);
+    const encryptedPassword = await createHashedPassword(password);
 
     // Default to STUDENT role if no role is specified
-    const assignedRole = roleInput || Role.STUDENT;
+    const assignedRole = role || Role.STUDENT;
 
     // Create new User record in Database
     const createdUser = await prisma.user.create({
         data: {
-            email: emailInput,
+            email: email,
             password: encryptedPassword,
             role: assignedRole,
         },
@@ -54,11 +54,11 @@ export async function registerUserAccount(userInput: RegisterUserInput) {
 
 // Authenticates a user login request and generates a JWT access token upon successful credentials match.
 export async function loginUserAccount(userInput: LoginUserInput) {
-    const { emailInput, passwordInput } = userInput;
+    const { email, password } = userInput;
 
     // Find user record by email
     const foundUser = await prisma.user.findUnique({
-        where: { email: emailInput },
+        where: { email: email },
     });
 
     if (!foundUser) {
@@ -66,7 +66,7 @@ export async function loginUserAccount(userInput: LoginUserInput) {
     }
 
     // Verify typed password against stored hashed password
-    const isPasswordValid = await verifyUserPassword(passwordInput, foundUser.password);
+    const isPasswordValid = await verifyUserPassword(password, foundUser.password);
 
     if (!isPasswordValid) {
         throw new Error("Invalid email or password");
@@ -90,19 +90,19 @@ export async function loginUserAccount(userInput: LoginUserInput) {
 
 // Fetches the logged-in user profile from database using userId.
 export async function getCurrentUserProfile(userId: string) {
-  const userProfile = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      id: true,
-      email: true,
-      role: true,
-      createdAt: true,
-    },
-  });
+    const userProfile = await prisma.user.findUnique({
+        where: { id: userId },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            createdAt: true,
+        },
+    });
 
-  if (!userProfile) {
-    throw new Error("User profile not found!");
-  }
+    if (!userProfile) {
+        throw new Error("User profile not found!");
+    }
 
-  return userProfile;
+    return userProfile;
 }

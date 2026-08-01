@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// 1. Dynamic Roles Enum
+enum Role {
+  ADMIN
+  STUDENT
+}
+
+// 2. Base User Model
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // RELATION 1:1 (One User can optionally have ONE StudentProfile)
+  profile   StudentProfile?
+
+  @@index([email])
+  @@map("users")
+}
+
+model StudentProfile {
+  id        String   @id @default(uuid())
+  name      String
+  rollNum   String   @unique @map("roll_num")
+  phone     String?
+
+  // FOREIGN KEY & 1:1 RELATION LINK
+  // Connects back to User table. If User row is deleted, profile auto-deletes (Cascade)
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([rollNum])
+  @@map("student_profiles")
+}

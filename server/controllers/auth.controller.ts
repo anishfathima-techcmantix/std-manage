@@ -5,10 +5,10 @@ import { registerUserAccount, loginUserAccount, getCurrentUserProfile } from "..
 // Handles HTTP request for User Registration and sends appropriate HTTP status code & JSON response.
 export async function registerController(req: Request, res: Response) {
     try {
-        const { emailInput, passwordInput, roleInput } = req.body;
+        const { email, password, role } = req.body;
 
         // Basic Input Validation
-        if (!emailInput || !passwordInput) {
+        if (!email || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Email and Password are required!",
@@ -17,9 +17,9 @@ export async function registerController(req: Request, res: Response) {
 
         // Call business logic from Service
         const createdUserData = await registerUserAccount({
-            emailInput,
-            passwordInput,
-            roleInput,
+            email,
+            password,
+            role,
         });
 
         return res.status(201).json({
@@ -38,10 +38,10 @@ export async function registerController(req: Request, res: Response) {
 // Handles HTTP request for User Login, authenticates credentials via Service, and returns JWT token.
 export async function loginController(req: Request, res: Response) {
     try {
-        const { emailInput, passwordInput } = req.body;
+        const { email, password } = req.body;
 
         // Basic Input Validation
-        if (!emailInput || !passwordInput) {
+        if (!email || !password) {
             return res.status(400).json({
                 success: false,
                 message: "Email and Password are required!",
@@ -50,8 +50,8 @@ export async function loginController(req: Request, res: Response) {
 
         // Call authentication logic from Service
         const loginResult = await loginUserAccount({
-            emailInput,
-            passwordInput,
+            email,
+            password,
         });
 
         return res.status(200).json({
