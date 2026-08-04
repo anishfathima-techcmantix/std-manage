@@ -34,6 +34,7 @@ export async function createServer() {
         res.status(200).json({ message: 'API working fine...!' });
     });
 
+    // Routes
     app.use('/api/auth', authRoutes);
     app.use("/api/students", studentRouter);
 

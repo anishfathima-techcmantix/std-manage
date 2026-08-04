@@ -12,6 +12,9 @@
     "lint": "eslint .",
     "preview": "vite preview"
   },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@ant-design/icons": "^6.3.2",
     "@prisma/adapter-mariadb": "^7.9.1",

@@ -8,7 +8,7 @@ const __dirname = import.meta.dirname;
 const distPath = path.join(__dirname, "../client");
 
 (async () => {
-    const app = await createServer(); // Await your server setup
+    const app = await createServer();
 
     // Serve static frontend files
     app.use(express.static(distPath));
