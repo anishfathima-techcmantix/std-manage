@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
-import { registerUserAccount, loginUserAccount, getCurrentUserProfile } from "../services/auth.service.js";
+import { AuthenticatedRequest } from "../middleware/auth.middleware.ts";
+import { registerUserAccount, loginUserAccount, getCurrentUserProfile } from "../services/auth.service.ts";
 
 // Handles HTTP request for User Registration and sends appropriate HTTP status code & JSON response.
 export async function registerController(req: Request, res: Response) {

@@ -1,6 +1,6 @@
 import { Router } from "express";
-import { createStudentProfileController, getAllStudentProfilesController, getStudentProfileByIdController, updateStudentProfileController, deleteStudentProfileController } from "../controllers/student.controller.js";
-import { authenticateUser, requireAdmin } from "../middleware/auth.middleware.js";
+import { authenticateUser, requireAdmin } from "../middleware/auth.middleware.ts";
+import { createStudentProfileController, getAllStudentProfilesController, getStudentProfileByIdController, updateStudentProfileController, deleteStudentProfileController } from "../controllers/student.controller.ts";
 
 const studentRouter = Router();
 

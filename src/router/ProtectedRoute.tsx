@@ -1,7 +1,7 @@
 import React from "react";
 import { Spin } from "antd";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.js";
+import { useAuth } from "../context/AuthContext.tsx";
 
 interface ProtectedRouteProps {
   allowedRoles?: Array<"ADMIN" | "STUDENT">;

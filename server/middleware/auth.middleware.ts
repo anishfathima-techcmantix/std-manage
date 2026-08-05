@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from "express";
-import { verifyUserToken, TokenPayload } from "../utils/auth.js";
 import { Role } from "@prisma/client";
+import { Request, Response, NextFunction } from "express";
+import { verifyUserToken, TokenPayload } from "../utils/auth.ts";
 
 // Extends Express Request object to hold logged-in user data.
 export interface AuthenticatedRequest extends Request {

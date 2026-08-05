@@ -1,6 +1,6 @@
-import { prisma } from "../config/db.js";
+import { prisma } from "../config/db";
 import { Role } from "@prisma/client";
-import { createHashedPassword, verifyUserPassword, generateUserToken } from "../utils/auth.js";
+import { createHashedPassword, verifyUserPassword, generateUserToken } from "../utils/auth.ts";
 
 // Input data structure required for User Registration.
 export interface RegisterUserInput {

@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
 import logger from "../utils/logger.ts";
 import { Prisma } from "@prisma/client";
+import type { Request, Response, NextFunction } from "express";
 
 export interface AppError extends Error {
     status?: number;

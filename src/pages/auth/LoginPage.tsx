@@ -1,92 +1,125 @@
+import toast from "react-hot-toast";
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Card, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
-import toast from "react-hot-toast";
-import { API_Instance } from "../../api/axios.instance.js";
-import { useAuth } from "../../context/AuthContext.js";
+
+import { API_Instance } from "../../api/axios.instance.ts";
+import { useAuth } from "../../context/AuthContext.tsx";
 
 const { Title, Text } = Typography;
 
-// PURPOSE: Login form component handling authentication, token storage, and role-based navigation.
+// Login form values.
+interface LoginFormValues {
+  email: string;
+  password: string;
+}
+
 export const LoginPage: React.FC = () => {
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  // PURPOSE: Handles form submission, triggers Login API, and routes based on User Role.
-  const handleLoginSubmit = async (values: { email: string; password: string }) => {
+  // Login user and redirect based on role.
+  const handleLoginSubmit = async (values: LoginFormValues) => {
     setLoading(true);
+
     try {
-      const response = await API_Instance.post("/auth/login", values);
+      const { data } = await API_Instance.post("/auth/login", values);
 
-      if (response.data.success) {
-        const { accessToken, authenticatedUser } = response.data.data;
-
-        // Store session in AuthContext & LocalStorage
-        login(accessToken, authenticatedUser);
-        toast.success(response.data.message || "Logged in successfully!");
-
-        // Role-based navigation
-        if (authenticatedUser.role === "ADMIN") {
-          navigate("/admin/dashboard");
-        } else {
-          navigate("/student/dashboard");
-        }
+      if (!data.success) {
+        toast.error(data.message);
+        return;
       }
+
+      const { accessToken, authenticatedUser } = data.data;
+
+      login(accessToken, authenticatedUser);
+
+      toast.success(data.message || "Login successful");
+
+      navigate(
+        authenticatedUser.role === "ADMIN"
+          ? "/admin/dashboard"
+          : "/student/dashboard"
+      );
     } catch (error: any) {
-      const errorMessage =
-        error.response?.data?.message || "Login failed! Please check your credentials.";
-      toast.error(errorMessage);
+      toast.error(
+        error.response?.data?.message ||
+        "Login failed. Please check your email and password."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
-      <Card className="w-full max-w-md shadow-lg rounded-xl border-0">
-        <div className="text-center mb-6">
-          <Title level={3} className="!mb-1 text-gray-800">
+    <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
+      <Card className="w-full max-w-md rounded-xl border-0 shadow-lg">
+        <div className="mb-6 text-center">
+          <Title level={3} className="!mb-1">
             Student Management
           </Title>
-          <Text type="secondary">Enter your credentials to access your account</Text>
+
+          <Text type="secondary">
+            Enter your email and password to continue.
+          </Text>
         </div>
 
-        <Form
-          name="loginForm"
+        <Form<LoginFormValues>
           layout="vertical"
           onFinish={handleLoginSubmit}
           autoComplete="off"
           size="large"
         >
-          {/* Email Field */}
+          {/* Email input */}
           <Form.Item
             name="email"
             label="Email Address"
             rules={[
-              { required: true, message: "Please enter your email!" },
-              { type: "email", message: "Please enter a valid email address!" },
+              {
+                required: true,
+                message: "Please enter your email.",
+              },
+              {
+                type: "email",
+                message: "Please enter a valid email address.",
+              },
             ]}
           >
-            <Input prefix={<UserOutlined className="text-gray-400" />} placeholder="admin@example.com" />
-          </Form.Item>
-
-          {/* Password Field */}
-          <Form.Item
-            name="password"
-            label="Password"
-            rules={[{ required: true, message: "Please enter your password!" }]}
-          >
-            <Input.Password
-              prefix={<LockOutlined className="text-gray-400" />}
-              placeholder="••••••••"
+            <Input
+              prefix={<UserOutlined />}
+              placeholder="admin@example.com"
             />
           </Form.Item>
 
-          {/* Submit Button */}
+          {/* Password input */}
+          <Form.Item
+            name="password"
+            label="Password"
+            rules={[
+              {
+                required: true,
+                message: "Please enter your password.",
+              },
+            ]}
+          >
+            <Input.Password
+              prefix={<LockOutlined />}
+              placeholder="Enter your password"
+            />
+          </Form.Item>
+
+          {/* Login button */}
           <Form.Item className="!mt-8">
-            <Button type="primary" htmlType="submit" block loading={loading} className="h-11 font-medium text-base">
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              loading={loading}
+              className="h-11"
+            >
               Sign In
             </Button>
           </Form.Item>

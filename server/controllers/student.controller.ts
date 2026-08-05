@@ -1,6 +1,6 @@
 import { Response } from "express";
-import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
-import { createStudentProfile, getAllStudentProfiles, getStudentProfileById, updateStudentProfile, deleteStudentProfile } from "../services/student.service.js";
+import { AuthenticatedRequest } from "../middleware/auth.middleware.ts";
+import { createStudentProfile, getAllStudentProfiles, getStudentProfileById, updateStudentProfile, deleteStudentProfile } from "../services/student.service.ts";
 
 // Handles HTTP request to create a new student profile for an existing user account.
 export async function createStudentProfileController(req: AuthenticatedRequest, res: Response) {

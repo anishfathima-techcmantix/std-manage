@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// Shape of User Profile stored in global authentication context.
+// User information stored after login.
 export interface AuthUser {
     userId: string;
     email: string;
@@ -17,13 +17,13 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// AuthProvider wrapper component to manage logged-in state across all React pages.
+// Provides authentication data to the entire application.
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
     const [token, setToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
-    // Load active session from localStorage on initial app load
+    // Load the saved user session when the app starts.
     useEffect(() => {
         const storedToken = localStorage.getItem("token");
         const storedUser = localStorage.getItem("currentUser");
@@ -41,7 +41,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsLoading(false);
     }, []);
 
-    // Sets active user session after successful API login response.
+    // Save the user details after a successful login.
     const login = (newToken: string, userProfile: AuthUser) => {
         setToken(newToken);
         setCurrentUser(userProfile);
@@ -49,7 +49,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem("currentUser", JSON.stringify(userProfile));
     };
 
-    // Clears user session from React state and localStorage.
+    // Remove the user session and go to the login page.
     const logout = () => {
         setToken(null);
         setCurrentUser(null);
@@ -73,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 };
 
-// Custom React Hook to conveniently consume AuthContext in any component.
+// Hook to access authentication data in any component.
 export const useAuth = (): AuthContextType => {
     const context = useContext(AuthContext);
     if (!context) {
