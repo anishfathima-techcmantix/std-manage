@@ -1,68 +1,66 @@
+import jwt from "jsonwebtoken";
 import { Role } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
-import { verifyUserToken, TokenPayload } from "../utils/auth.ts";
 
-// Extends Express Request object to hold logged-in user data.
+const JWT_SECRET = process.env.JWT_SECRET;
+export interface TokenPayload {
+    userId: string;
+    role: Role;
+}
+
 export interface AuthenticatedRequest extends Request {
     currentUser?: TokenPayload;
 }
 
-// Verifies the JWT Bearer token from incoming request headers to authenticate the user.
-export function authenticateUser(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+// Protect middleware
+export function protect(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     const authHeader = req.headers.authorization;
 
-    if (!authHeader) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
         return res.status(401).json({
             success: false,
-            message: "Authentication Failed: Missing Authorization Header! Please provide a Bearer Token.",
+            message: "Unauthorized access. No token provided."
         });
     }
 
-    if (!authHeader.startsWith("Bearer ")) {
-        return res.status(401).json({
-            success: false,
-            message: "Authentication Failed: Invalid Token Format! Authorization header must be 'Bearer <token>'.",
-        });
-    }
+    const token = authHeader.split(" ")[1];
 
-    const tokenString = authHeader.split(" ")[1];
-
-    if (!tokenString || tokenString.trim() === "") {
-        return res.status(401).json({
+    if (!JWT_SECRET) {
+        return res.status(500).json({
             success: false,
-            message: "Authentication Failed: Bearer Token string is empty!",
+            message: "Server Error: JWT_SECRET is not configured in .env",
         });
     }
 
     try {
-        const decodedUserData = verifyUserToken(tokenString);
-        req.currentUser = decodedUserData;
+        req.currentUser = jwt.verify(token, JWT_SECRET) as TokenPayload;
         next();
-    } catch (error: any) {
-        return res.status(403).json({
+    }
+    catch (error) {
+        return res.status(401).json({
             success: false,
-            message: "Authentication Failed: Token is invalid or has expired! Please log in again.",
+            message: "Unauthorized access. Invalid token or expired."
         });
     }
 }
 
-// Checks if the authenticated user has ADMIN role before granting access.
-export function requireAdmin(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-    const authenticatedUser = req.currentUser;
+// Permit middleware
+export function permit(...allowedRoles: Role[]) {
+    return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
+        if (!req.currentUser) {
+            return res.status(403).json({
+                success: false,
+                message: "Forbidden access. User not authenticated."
+            });
+        }
 
-    if (!authenticatedUser) {
-        return res.status(401).json({
-            success: false,
-            message: "Access Denied: User authentication required before role authorization!",
-        });
-    }
+        if (!allowedRoles.includes(req.currentUser.role)) {
+            return res.status(403).json({
+                success: false,
+                message: "Forbidden access. User does not have the required role."
+            });
+        }
 
-    if (authenticatedUser.role !== Role.ADMIN) {
-        return res.status(403).json({
-            success: false,
-            message: `Forbidden Action: Access denied! Your role is '${authenticatedUser.role}'. Only 'ADMIN' role can perform this operation.`,
-        });
-    }
-
-    next();
+        next();
+    };
 }

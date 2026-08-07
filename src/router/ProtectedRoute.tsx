@@ -1,35 +1,34 @@
-import React from "react";
-import { Spin } from "antd";
+import { UserRole } from "../types/auth.types";
+import { useAuth } from "../context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
-import { useAuth } from "../context/AuthContext.tsx";
+import { APP_ROUTES } from "../constants/appRoutes.constants";
 
 interface ProtectedRouteProps {
-  allowedRoles?: Array<"ADMIN" | "STUDENT">;
+  allowedRoles?: UserRole[];
 }
 
-// Guards routes by checking authentication status and user roles.
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
+export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
   const { currentUser, isLoading } = useAuth();
 
-  // Show Ant Design Loading Spinner while checking auth state from localStorage
+  // Show a loading state while AuthContext fetches profile on page refresh
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen bg-gray-50">
-        <Spin size="large" description="Verifying session..." />
+      <div className="flex h-screen items-center justify-center">
+        <p className="text-lg font-semibold text-gray-600">Loading...</p>
       </div>
     );
   }
 
-  // If not logged in, redirect to login page
+  // If not logged in, redirect to Login page
   if (!currentUser) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to={APP_ROUTES.LOGIN} replace />;
   }
 
-  // If route requires specific role & current user doesn't match, redirect
+  // If route requires specific role & user doesn't have it, redirect to Unauthorized page
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to="/unauthorized" replace />;
+    return <Navigate to={APP_ROUTES.UNAUTHORIZED} replace />;
   }
 
-  // Authorized -> Render nested child routes
+  // Render child routes
   return <Outlet />;
 };

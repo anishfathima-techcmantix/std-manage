@@ -1,22 +1,27 @@
 import React from "react";
+import { ProtectedRoute } from "@/router/ProtectedRoute";
 import { Routes, Route, Navigate } from "react-router-dom";
-import { ProtectedRoute } from "./ProtectedRoute.tsx";
+import { APP_ROUTES } from "@/constants/appRoutes.constants";
 
 // Active Implemented Pages
-import LoginPage from "@/pages/auth/LoginPage.tsx";
-import UnauthorizedPage from "@/pages/common/UnauthorizedPage.tsx";
+import LoginPage from "@/pages/auth/LoginPage";
+import UnauthorizedPage from "@/pages/common/UnauthorizedPage";
 
-// PURPOSE: Centralized App Router mapping currently implemented authentication & role routes.
 export const AppRoutes: React.FC = () => {
     return (
         <Routes>
-            {/* 1. PUBLIC ROUTES */}
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/unauthorized" element={<UnauthorizedPage />} />
+            {/* Public routes */}
+            <Route 
+                path={APP_ROUTES.LOGIN}
+                element={<LoginPage />}
+            />
+            <Route 
+                path={APP_ROUTES.UNAUTHORIZED}
+                element={<UnauthorizedPage />}
+            />
 
-            {/* 2. PROTECTED ADMIN ROUTES (Only for ADMIN Role) */}
+            {/* Protected admin routes */}
             <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
-                {/* Placeholder until we build StudentListPage UI in the next file */}
                 <Route
                     path="/admin/dashboard"
                     element={
@@ -27,7 +32,7 @@ export const AppRoutes: React.FC = () => {
                 />
             </Route>
 
-            {/* 3. PROTECTED STUDENT ROUTES (Only for STUDENT Role) */}
+            {/* Protected student routes */}
             <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
                 <Route
                     path="/student/dashboard"
@@ -39,9 +44,14 @@ export const AppRoutes: React.FC = () => {
                 />
             </Route>
 
-            {/* 4. DEFAULT REDIRECTS */}
-            <Route path="/" element={<Navigate to="/login" replace />} />
-            <Route path="*" element={<Navigate to="/unauthorized" replace />} />
+            <Route 
+                path={APP_ROUTES.HOME} 
+                element={<Navigate to={APP_ROUTES.LOGIN} replace />}
+            />
+            <Route 
+                path={APP_ROUTES.NOT_FOUND} 
+                element={<Navigate to={APP_ROUTES.UNAUTHORIZED} replace />} 
+            />
         </Routes>
     );
 };

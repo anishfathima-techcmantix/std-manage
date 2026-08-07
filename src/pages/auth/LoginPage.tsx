@@ -4,16 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { Form, Input, Button, Card, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 
-import { API_Instance } from "../../api/axios.instance.ts";
-import { useAuth } from "../../context/AuthContext.tsx";
+import { useAuth } from "@/context/AuthContext";
+import { authService } from "@/services/auth.service";
+import { LoginCredentials } from "@/types/auth.types";
 
 const { Title, Text } = Typography;
-
-// Login form values.
-interface LoginFormValues {
-  email: string;
-  password: string;
-}
 
 export const LoginPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -22,23 +17,25 @@ export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
 
   // Login user and redirect based on role.
-  const handleLoginSubmit = async (values: LoginFormValues) => {
+  const handleLoginSubmit = async (values: LoginCredentials) => {
     setLoading(true);
 
     try {
-      const { data } = await API_Instance.post("/auth/login", values);
+      const response = await authService.login(values);
 
-      if (!data.success) {
-        toast.error(data.message);
+      if (!response.success || !response.data) {
+        toast.error(response.message || "Login failed");
         return;
       }
 
-      const { accessToken, authenticatedUser } = data.data;
+      const { accessToken, authenticatedUser } = response.data;
 
+      // Save to AuthContext & localStorage
       login(accessToken, authenticatedUser);
 
-      toast.success(data.message || "Login successful");
+      toast.success(response.message || "Login successful");
 
+      // Redirect based on User Role
       navigate(
         authenticatedUser.role === "ADMIN"
           ? "/admin/dashboard"
@@ -67,7 +64,7 @@ export const LoginPage: React.FC = () => {
           </Text>
         </div>
 
-        <Form<LoginFormValues>
+        <Form<LoginCredentials>
           layout="vertical"
           onFinish={handleLoginSubmit}
           autoComplete="off"
