@@ -1,11 +1,7 @@
 export const API_ENDPOINTS = {
-    AUTH: {
-        LOGIN: "/auth/login",
-        REGISTER: "/auth/register",
-        ME: "/auth/me",
-    },
-    STUDENTS: {
-        BASE: "/students",
-        BY_ID: (id: string) => `/students/${id}`,
+    auth: {
+        login: "/auth/login",
+        register: "/auth/register",
+        me: "/auth/me",
     },
 } as const;

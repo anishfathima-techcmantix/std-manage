@@ -1,3 +1,5 @@
+import React from "react";
+import { Spin } from "antd";
 import { UserRole } from "../types/auth.types";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
@@ -7,28 +9,24 @@ interface ProtectedRouteProps {
   allowedRoles?: UserRole[];
 }
 
-export const ProtectedRoute = ({ allowedRoles }: ProtectedRouteProps) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   const { currentUser, isLoading } = useAuth();
 
-  // Show a loading state while AuthContext fetches profile on page refresh
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center">
-        <p className="text-lg font-semibold text-gray-600">Loading...</p>
+      <div className="flex h-screen w-full items-center justify-center bg-gray-50">
+        <Spin size="large" description="Authenticating..." />
       </div>
     );
   }
 
-  // If not logged in, redirect to Login page
   if (!currentUser) {
-    return <Navigate to={APP_ROUTES.LOGIN} replace />;
+    return <Navigate to={APP_ROUTES.login} replace />;
   }
 
-  // If route requires specific role & user doesn't have it, redirect to Unauthorized page
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to={APP_ROUTES.UNAUTHORIZED} replace />;
+    return <Navigate to={APP_ROUTES.notFound} replace />;
   }
 
-  // Render child routes
   return <Outlet />;
 };

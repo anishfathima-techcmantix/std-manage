@@ -1,11 +1,13 @@
 import { prisma } from "../server/config/db.js";
+import { seedCountries } from "./seeders/CountrySeeder.js";
+import { seedProfessions } from "./seeders/ProfessionSeeder.js";
 import { seedUsers } from "./seeders/UserSeeder.js";
 
-// Master seed script triggering configured database seeders.
 async function main() {
     console.log("🚀 Master Seeding Started...");
 
-    // Execute User Seeder
+    await seedProfessions();
+    await seedCountries();
     await seedUsers();
 
     console.log("🎉 All Seeders Executed Successfully!");

@@ -8,20 +8,18 @@ import { AuthenticatedRequest, TokenPayload } from "../middleware/auth.middlewar
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRY = process.env.JWT_EXPIRY;
 
-// 1. Register user
+// Register User
 export async function userRegister(req: Request, res: Response) {
     try {
-        const { email, password, role } = req.body;
+        const { name, email, password, role, countryId, professionId } = req.body;
 
-        // Input validation
-        if (!email || !password) {
+        if (!name || !email || !password || !countryId || !professionId) {
             return res.status(400).json({
                 success: false,
-                message: "Email and Password are required!",
+                message: "Name, Email, Password, Country, and Profession are required!",
             });
         }
 
-        // Check existing user
         const existingUser = await prisma.user.findUnique({
             where: { email },
         });
@@ -29,34 +27,36 @@ export async function userRegister(req: Request, res: Response) {
         if (existingUser) {
             return res.status(400).json({
                 success: false,
-                message: "A user account with this email already exists",
+                message: "A user with this email already exists!",
             });
         }
 
-        // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
         const createdUser = await prisma.user.create({
             data: {
+                name,
                 email,
                 password: hashedPassword,
                 role: role || Role.STUDENT,
+                countryId,
+                professionId,
             },
-            select: {
-                id: true,
-                email: true,
-                role: true,
-                createdAt: true,
+            include: {
+                country: true,
+                profession: true,
             },
         });
+
+        const { password: _, ...userData } = createdUser;
 
         return res.status(201).json({
             success: true,
             message: "User registered successfully!",
-            data: createdUser,
+            data: userData,
         });
-    } catch (error: any) {
+    }
+    catch (error: any) {
         return res.status(400).json({
             success: false,
             message: error.message || "User registration failed!",
@@ -64,70 +64,73 @@ export async function userRegister(req: Request, res: Response) {
     }
 }
 
-// 2. LOGIN USER
+// Login User
 export async function userLogin(req: Request, res: Response) {
     try {
         const { email, password } = req.body;
 
-        // Input Validation
         if (!email || !password) {
             return res.status(400).json({
                 success: false,
-                message: "Email and Password are required!",
-            });
+                message: "Email and Password are required!"
+            })
         }
 
-        // Find User
         const foundUser = await prisma.user.findUnique({
             where: { email },
-        });
+            include: {
+                country: true,
+                profession: true
+            }
+        })
 
         if (!foundUser) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email or password",
-            });
+                message: "Invalid credentials!"
+            })
         }
 
-        // Verify Password using bcrypt
         const isPasswordValid = await bcrypt.compare(password, foundUser.password);
 
         if (!isPasswordValid) {
             return res.status(401).json({
                 success: false,
-                message: "Invalid email or password",
-            });
+                message: "Invalid credentials!"
+            })
         }
 
         if (!JWT_SECRET) {
             return res.status(500).json({
                 success: false,
                 message: "Server Error: JWT_SECRET missing in environment variables!",
-            });
+            })
         }
 
-        // Generate JWT Token
         const payload: TokenPayload = {
             userId: foundUser.id,
-            role: foundUser.role,
-        };
+            role: foundUser.role
+        }
 
         const accessToken = jwt.sign(payload, JWT_SECRET, {
-            expiresIn: JWT_EXPIRY as any,
+            expiresIn: (JWT_EXPIRY || "1d") as any,
         });
 
         return res.status(200).json({
             success: true,
-            message: "Login successful!",
+            message: "Login successfully",
             data: {
                 accessToken,
                 authenticatedUser: {
                     id: foundUser.id,
+                    name: foundUser.name,
                     email: foundUser.email,
                     role: foundUser.role,
+                    country: foundUser.country,
+                    profession: foundUser.profession,
                 },
-            },
-        });
+            }
+        })
     } catch (error: any) {
         return res.status(401).json({
             success: false,
@@ -136,11 +139,8 @@ export async function userLogin(req: Request, res: Response) {
     }
 }
 
-// 3. GET CURRENT USER (Protected Profile)
-export async function getCurrentUser(
-    req: AuthenticatedRequest,
-    res: Response
-) {
+// Get current user
+export async function getCurrentUser(req: AuthenticatedRequest, res: Response) {
     try {
         const userId = req.currentUser?.userId;
 
@@ -151,13 +151,15 @@ export async function getCurrentUser(
             });
         }
 
-        // Find User
         const userProfile = await prisma.user.findUnique({
             where: { id: userId },
             select: {
                 id: true,
+                name: true,
                 email: true,
                 role: true,
+                country: true,
+                profession: true,
                 createdAt: true,
             },
         });

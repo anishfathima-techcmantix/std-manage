@@ -3,6 +3,7 @@ import { Role } from "@prisma/client";
 import { Request, Response, NextFunction } from "express";
 
 const JWT_SECRET = process.env.JWT_SECRET;
+
 export interface TokenPayload {
     userId: string;
     role: Role;

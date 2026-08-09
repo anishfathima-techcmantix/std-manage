@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import express from "express";
 import { checkDbConnection } from "./config/db.ts";
 import { errorHandler } from "./middleware/errorHandler.middleware.ts";
-import studentRouter from "./routes/student.route.ts";
 import authRoutes from "./routes/auth.route.ts";
 import logger from "./utils/logger.ts";
 
@@ -36,7 +35,6 @@ export async function createServer() {
 
     // Routes
     app.use('/api/auth', authRoutes);
-    app.use("/api/students", studentRouter);
 
     app.use("/api/*path", (req, res) => {
         logger.warn({ message: "API route not found", method: req.method, url: req.originalUrl });

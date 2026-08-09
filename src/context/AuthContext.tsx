@@ -1,6 +1,7 @@
 import { User } from "../types/auth.types";
 import { authService } from "../services/auth.service";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+
 interface AuthContextType {
     currentUser: User | null;
     token: string | null;
@@ -65,7 +66,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     );
 };
 
-// Custom Hook to easily consume Auth Context in any component
 export const useAuth = () => {
     const context = useContext(AuthContext);
     if (!context) {

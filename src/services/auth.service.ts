@@ -6,7 +6,7 @@ export const authService = {
     // Login User
     login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
         const response = await API_Instance.post<AuthResponse>(
-            API_ENDPOINTS.AUTH.LOGIN,
+            API_ENDPOINTS.auth.login,
             credentials
         );
         return response.data;
@@ -15,7 +15,7 @@ export const authService = {
     // Register User
     register: async (payload: RegisterPayload): Promise<AuthResponse> => {
         const response = await API_Instance.post<AuthResponse>(
-            API_ENDPOINTS.AUTH.REGISTER,
+            API_ENDPOINTS.auth.register,
             payload
         );
         return response.data;
@@ -24,7 +24,7 @@ export const authService = {
     // Get Current Authenticated User Profile
     getMe: async (): Promise<AuthResponse> => {
         const response = await API_Instance.get<AuthResponse>(
-            API_ENDPOINTS.AUTH.ME
+            API_ENDPOINTS.auth.me
         );
         return response.data;
     },

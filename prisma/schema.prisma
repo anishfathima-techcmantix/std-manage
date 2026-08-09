@@ -1,47 +1,73 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
 datasource db {
   provider = "mysql"
 }
 
-// 1. Dynamic Roles Enum
+generator client {
+  provider = "prisma-client-js"
+}
+
 enum Role {
   ADMIN
   STUDENT
 }
 
-// 2. Base User Model
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  password  String
-  role      Role     @default(STUDENT)
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id                  String              @id @default(uuid())
+  name                String
+  email               String              @unique
+  password            String
+  role                Role                @default(STUDENT)
+  countryId           String
+  country             Country             @relation(fields: [countryId], references: [id])
+  professionId        String
+  profession          Profession          @relation(fields: [professionId], references: [id])
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
-  // RELATION 1:1 (One User can optionally have ONE StudentProfile)
-  profile   StudentProfile?
-
-  @@index([email])
   @@map("users")
 }
 
-model StudentProfile {
-  id        String   @id @default(uuid())
-  name      String
-  rollNum   String   @unique @map("roll_num")
-  phone     String?
+model Country {
+  id                  String              @id @default(uuid())
+  name                String              @unique
+  code                String              @unique
+  users               User[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
-  // FOREIGN KEY & 1:1 RELATION LINK
-  // Connects back to User table. If User row is deleted, profile auto-deletes (Cascade)
-  userId    String   @unique @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@map("countries")
+}
 
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+model Profession {
+  id                  String              @id @default(uuid())
+  title               String              @unique
+  users               User[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
-  @@index([rollNum])
-  @@map("student_profiles")
+  @@map("professions")
+}
+
+model Chapter {
+  id                  String              @id @default(uuid())
+  title               String              @unique
+  description         String?
+  contents            Content[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("chapters")
+}
+
+model Content {
+  id                  String              @id @default(uuid())
+  title               String
+  description         String?
+  pdfUrl              String              @unique
+  chapterId           String
+  chapter             Chapter             @relation(fields: [chapterId], references: [id], onDelete: Cascade)
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  @@map("contents")
 }
