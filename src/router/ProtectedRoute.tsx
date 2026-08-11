@@ -25,7 +25,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
   }
 
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to={APP_ROUTES.notFound} replace />;
+    return <Navigate to={APP_ROUTES.notFound} state={{ status: 403 }} replace />;
   }
 
   return <Outlet />;

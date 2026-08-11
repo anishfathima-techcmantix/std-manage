@@ -13,7 +13,14 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
+    const [currentUser, setCurrentUser] = useState<User | null>(() => {
+        const storedUser = localStorage.getItem("currentUser");
+        try {
+            return storedUser ? JSON.parse(storedUser) : null;
+        } catch {
+            return null;
+        }
+    });
     const [token, setToken] = useState<string | null>(
         localStorage.getItem("accessToken")
     );
@@ -28,6 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                     const response = await authService.getMe();
                     if (response.currentUser) {
                         setCurrentUser(response.currentUser);
+                        localStorage.setItem("currentUser", JSON.stringify(response.currentUser));
                     }
                 } catch (error) {
                     logout();
@@ -41,12 +49,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const login = (accessToken: string, user: User) => {
         localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("currentUser", JSON.stringify(user));
         setToken(accessToken);
         setCurrentUser(user);
     };
 
     const logout = () => {
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("currentUser");
         setToken(null);
         setCurrentUser(null);
     };

@@ -4,9 +4,9 @@ import { APP_ROUTES } from "@/constants/appRoutes.constants";
 
 // Pages & Components
 import LoginPage from "@/pages/auth/LoginPage";
-import RegisterPage from "@/pages/auth/RegisterPage";
 import NotFound from "@/pages/common/NotFound";
 import { ProtectedRoute } from "./ProtectedRoute";
+import RegisterPage from "@/pages/auth/RegisterPage";
 
 export const AppRoutes: React.FC = () => {
     return (
@@ -18,10 +18,13 @@ export const AppRoutes: React.FC = () => {
             <Route path={APP_ROUTES.login} element={<LoginPage />} />
             <Route path={APP_ROUTES.register} element={<RegisterPage />} />
 
-            {/* 3. Protected Routes (Admin & Student) */}
-            <Route element={<ProtectedRoute allowedRoles={["ADMIN", "STUDENT"]} />}>
-                {/* Placeholders for future dashboards */}
+            {/* 3. Protected Routes (Admin) */}
+            <Route element={<ProtectedRoute allowedRoles={["ADMIN"]} />}>
                 <Route path="/admin/dashboard" element={<div>Admin Dashboard</div>} />
+            </Route>
+
+            {/* 4. Protected Routes (Student) */}
+            <Route element={<ProtectedRoute allowedRoles={["STUDENT"]} />}>
                 <Route path="/student/home" element={<div>Student Home</div>} />
             </Route>
 
