@@ -6,6 +6,8 @@ import { checkDbConnection } from "./config/db.ts";
 import { errorHandler } from "./middleware/errorHandler.middleware.ts";
 import authRoutes from "./routes/auth.route.ts";
 import logger from "./utils/logger.ts";
+import countryRouter from "./routes/countries.route.ts";
+import professionsRouter from "./routes/professions.route.ts";
 
 dotenv.config({
     path: path.resolve(process.cwd(), ".env"),
@@ -35,6 +37,8 @@ export async function createServer() {
 
     // Routes
     app.use('/api/auth', authRoutes);
+    app.use('/api/countries', countryRouter);
+    app.use('/api/professions', professionsRouter);
 
     app.use("/api/*path", (req, res) => {
         logger.warn({ message: "API route not found", method: req.method, url: req.originalUrl });

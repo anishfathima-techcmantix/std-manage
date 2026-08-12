@@ -9,6 +9,6 @@ export const APP_ROUTES = {
     adminDashboard: "/admin/dashboard",
 
     // Student
-    studentHome: "/student/home",
+    studentHome: "/home",
 
 } as const;
