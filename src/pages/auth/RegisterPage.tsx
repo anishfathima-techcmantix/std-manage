@@ -1,38 +1,56 @@
-import toast from "react-hot-toast";
 import React, { useEffect, useState } from "react";
-import { API_Instance } from "@/api/axios.instance";
+import toast from "react-hot-toast";
 import { Link, useNavigate } from "react-router-dom";
-import { authService } from "@/services/auth.service";
-import { APP_ROUTES } from "@/constants/appRoutes.constants";
 import { Form, Input, Select, Button, Card, Typography } from "antd";
-import { Country, Profession, RegisterFormValues } from "@/types/auth.types";
-import { UserOutlined, MailOutlined, LockOutlined, GlobalOutlined, IdcardOutlined } from "@ant-design/icons";
+import {
+    UserOutlined,
+    MailOutlined,
+    LockOutlined,
+    GlobalOutlined,
+    IdcardOutlined,
+} from "@ant-design/icons";
+
+import { authService } from "@/services/auth.service";
+import { countriesService } from "@/services/countries.service";
+import { professionsService } from "@/services/professions.service";
+
+import { APP_ROUTES } from "@/constants/appRoutes.constants";
+import { RegisterFormValues } from "@/types/auth.types";
+import { Country, Profession } from "@/types/countries.types";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
 
 export const RegisterPage: React.FC = () => {
-    const [form] = Form.useForm();
+    const [form] = Form.useForm<RegisterFormValues>();
     const navigate = useNavigate();
 
     const [countries, setCountries] = useState<Country[]>([]);
     const [professions, setProfessions] = useState<Profession[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [fetchingLookups, setFetchingLookups] = useState<boolean>(true);
 
-    // Direct API Calls inside Register Page
+    const [loading, setLoading] = useState(false);
+    const [fetchingLookups, setFetchingLookups] = useState(true);
+
+    // Fetch countries and professions
     useEffect(() => {
         const fetchDropdownData = async () => {
             try {
-                const [countryRes, professionRes] = await Promise.all([
-                    API_Instance.get("/countries"),
-                    API_Instance.get("/professions"),
+                setFetchingLookups(true);
+
+                const [countriesData, professionsData] = await Promise.all([
+                    countriesService.getCountries(),
+                    professionsService.getProfessions(),
                 ]);
 
-                setCountries(countryRes.data.data || []);
-                setProfessions(professionRes.data.data || []);
+                setCountries(countriesData as Country[]);
+                setProfessions(professionsData as Profession[]);
             } catch (error: any) {
-                toast.error("Failed to load country & profession list!");
+                console.error("Failed to fetch dropdown data:", error);
+
+                toast.error(
+                    error?.response?.data?.message ||
+                    "Failed to load countries and professions."
+                );
             } finally {
                 setFetchingLookups(false);
             }
@@ -41,8 +59,10 @@ export const RegisterPage: React.FC = () => {
         fetchDropdownData();
     }, []);
 
-    // Submit Handler
-    const handleRegisterSubmit = async (values: RegisterFormValues) => {
+    // Submit registration
+    const handleRegisterSubmit = async (
+        values: RegisterFormValues
+    ) => {
         setLoading(true);
 
         try {
@@ -55,14 +75,22 @@ export const RegisterPage: React.FC = () => {
             });
 
             if (response.success) {
-                toast.success(response.message || "Registration successful!");
-                navigate(APP_ROUTES.login || "/login");
+                toast.success(
+                    response.message || "Registration successful!"
+                );
+
+                navigate(APP_ROUTES.login);
             } else {
-                toast.error(response.message || "Registration failed!");
+                toast.error(
+                    response.message || "Registration failed!"
+                );
             }
         } catch (error: any) {
+            console.error("Registration error:", error);
+
             toast.error(
-                error.response?.data?.message || "Registration failed!"
+                error?.response?.data?.message ||
+                "Registration failed!"
             );
         } finally {
             setLoading(false);
@@ -72,10 +100,12 @@ export const RegisterPage: React.FC = () => {
     return (
         <div className="flex min-h-screen items-center justify-center bg-gray-100 p-4">
             <Card className="w-full max-w-lg rounded-xl border-0 shadow-lg">
+                {/* Header */}
                 <div className="mb-6 text-center">
                     <Title level={3} className="!mb-1">
                         Create an Account
                     </Title>
+
                     <Text type="secondary">
                         Fill in your details to register as a student.
                     </Text>
@@ -92,9 +122,18 @@ export const RegisterPage: React.FC = () => {
                     <Form.Item
                         name="name"
                         label="Full Name"
-                        rules={[{ required: true, message: "Please enter your full name." }]}
+                        rules={[
+                            {
+                                required: true,
+                                message:
+                                    "Please enter your full name.",
+                            },
+                        ]}
                     >
-                        <Input prefix={<UserOutlined />} placeholder="Anis Ahamad" />
+                        <Input
+                            prefix={<UserOutlined />}
+                            placeholder="Anis Ahamad"
+                        />
                     </Form.Item>
 
                     {/* Email */}
@@ -102,54 +141,90 @@ export const RegisterPage: React.FC = () => {
                         name="email"
                         label="Email Address"
                         rules={[
-                            { required: true, message: "Please enter your email." },
-                            { type: "email", message: "Please enter a valid email address." },
+                            {
+                                required: true,
+                                message:
+                                    "Please enter your email.",
+                            },
+                            {
+                                type: "email",
+                                message:
+                                    "Please enter a valid email address.",
+                            },
                         ]}
                     >
-                        <Input prefix={<MailOutlined />} placeholder="anis@example.com" />
+                        <Input
+                            prefix={<MailOutlined />}
+                            placeholder="anis@example.com"
+                        />
                     </Form.Item>
 
-                    {/* Country Dropdown with Flag */}
+                    {/* Country */}
                     <Form.Item
                         name="countryId"
                         label="Country"
-                        rules={[{ required: true, message: "Please select your country." }]}
+                        rules={[
+                            {
+                                required: true,
+                                message:
+                                    "Please select your country.",
+                            },
+                        ]}
                     >
                         <Select
                             placeholder="Select your country"
                             loading={fetchingLookups}
+                            disabled={fetchingLookups}
                             showSearch
                             optionFilterProp="children"
                             suffixIcon={<GlobalOutlined />}
                         >
                             {countries.map((country) => (
-                                <Option key={country.id} value={country.id}>
+                                <Option
+                                    key={country.id}
+                                    value={country.id}
+                                >
                                     <div className="flex items-center gap-2">
                                         <img
                                             src={`https://flagcdn.com/24x18/${country.code.toLowerCase()}.png`}
                                             alt={country.name}
                                             className="h-3.5 w-5 rounded-sm border border-gray-200 object-cover"
                                         />
-                                        <span>{country.name}</span>
+
+                                        <span>
+                                            {country.name}
+                                        </span>
                                     </div>
                                 </Option>
                             ))}
                         </Select>
                     </Form.Item>
 
-                    {/* Profession Dropdown */}
+                    {/* Profession */}
                     <Form.Item
                         name="professionId"
                         label="Profession"
-                        rules={[{ required: true, message: "Please select your profession." }]}
+                        rules={[
+                            {
+                                required: true,
+                                message:
+                                    "Please select your profession.",
+                            },
+                        ]}
                     >
                         <Select
                             placeholder="Select your profession"
                             loading={fetchingLookups}
+                            disabled={fetchingLookups}
+                            showSearch
+                            optionFilterProp="children"
                             suffixIcon={<IdcardOutlined />}
                         >
                             {professions.map((profession) => (
-                                <Option key={profession.id} value={profession.id}>
+                                <Option
+                                    key={profession.id}
+                                    value={profession.id}
+                                >
                                     {profession.title}
                                 </Option>
                             ))}
@@ -161,8 +236,16 @@ export const RegisterPage: React.FC = () => {
                         name="password"
                         label="Password"
                         rules={[
-                            { required: true, message: "Please enter a password." },
-                            { min: 6, message: "Password must be at least 6 characters." },
+                            {
+                                required: true,
+                                message:
+                                    "Please enter a password.",
+                            },
+                            {
+                                min: 6,
+                                message:
+                                    "Password must be at least 6 characters.",
+                            },
                         ]}
                     >
                         <Input.Password
@@ -177,14 +260,24 @@ export const RegisterPage: React.FC = () => {
                         label="Confirm Password"
                         dependencies={["password"]}
                         rules={[
-                            { required: true, message: "Please confirm your password." },
+                            {
+                                required: true,
+                                message:
+                                    "Please confirm your password.",
+                            },
                             ({ getFieldValue }) => ({
                                 validator(_, value) {
-                                    if (!value || getFieldValue("password") === value) {
+                                    if (
+                                        !value ||
+                                        getFieldValue("password") === value
+                                    ) {
                                         return Promise.resolve();
                                     }
+
                                     return Promise.reject(
-                                        new Error("The two passwords do not match!")
+                                        new Error(
+                                            "The two passwords do not match!"
+                                        )
                                     );
                                 },
                             }),
@@ -203,17 +296,23 @@ export const RegisterPage: React.FC = () => {
                             htmlType="submit"
                             block
                             loading={loading}
+                            disabled={fetchingLookups}
                             className="h-11"
-                            style={{ backgroundColor: "#1677ff" }}
+                            style={{
+                                backgroundColor: "#1677ff",
+                            }}
                         >
                             Sign Up
                         </Button>
                     </Form.Item>
                 </Form>
 
-                {/* Back to Login */}
+                {/* Login */}
                 <div className="mt-4 text-center">
-                    <Text type="secondary">Already have an account? </Text>
+                    <Text type="secondary">
+                        Already have an account?{" "}
+                    </Text>
+
                     <Link
                         to={APP_ROUTES.login || "/login"}
                         className="font-medium text-blue-600 hover:underline"
