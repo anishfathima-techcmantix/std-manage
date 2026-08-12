@@ -1,4 +1,4 @@
-import axios from "axios";
+﻿import axios from "axios";
 import toast from "react-hot-toast";
 
 // Axios instance used for all API requests.
@@ -11,7 +11,11 @@ API_Instance.interceptors.request.use((config) => {
     const token = localStorage.getItem("accessToken");
 
     if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+        // Ensure existing headers are preserved and set the Authorization header correctly
+        config.headers = {
+            ...config.headers,
+            Authorization: 'Bearer ' + token,
+        };
     }
     return config;
 });
