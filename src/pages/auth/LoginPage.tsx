@@ -1,9 +1,9 @@
 import toast from "react-hot-toast";
 import React, { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { LoginCredentials } from "@/types/types";
 import { Link, useNavigate } from "react-router-dom";
 import { authService } from "@/services/auth.service";
-import { LoginCredentials } from "@/types/auth.types";
 import { APP_ROUTES } from "@/constants/appRoutes.constants";
 import { Form, Input, Button, Card, Typography } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
@@ -16,7 +16,7 @@ export const LoginPage: React.FC = () => {
     const { login } = useAuth();
     const navigate = useNavigate();
 
-    const handleLoginSubmit = async (values: LoginCredentials) => {
+    const handleLogin = async (values: LoginCredentials) => {
         setLoading(true);
 
         try {
@@ -66,7 +66,7 @@ export const LoginPage: React.FC = () => {
 
                 <Form<LoginCredentials>
                     layout="vertical"
-                    onFinish={handleLoginSubmit}
+                    onFinish={handleLogin}
                     autoComplete="off"
                     size="large"
                 >

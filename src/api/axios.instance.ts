@@ -1,9 +1,9 @@
-﻿import axios from "axios";
+import axios from "axios";
 import toast from "react-hot-toast";
 
 // Axios instance used for all API requests.
 export const API_Instance = axios.create({
-    baseURL: "/api",
+  baseURL: "/api",
 });
 
 // Add the JWT token to every request if the user is logged in.
@@ -11,11 +11,7 @@ API_Instance.interceptors.request.use((config) => {
     const token = localStorage.getItem("accessToken");
 
     if (token) {
-        // Ensure existing headers are preserved and set the Authorization header correctly
-        config.headers = {
-            ...config.headers,
-            Authorization: 'Bearer ' + token,
-        };
+        config.headers.set('Authorization', 'Bearer ' + token);
     }
     return config;
 });

@@ -1,6 +1,6 @@
 import { API_Instance } from "../api/axios.instance";
 import { API_ENDPOINTS } from "../constants/apiRoutes.constants";
-import { AuthResponse, LoginCredentials, RegisterPayload } from "../types/auth.types";
+import { AuthResponse, LoginCredentials, RegisterPayload } from "../types/types";
 
 export const authService = {
     // Login User

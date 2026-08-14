@@ -1,6 +1,5 @@
 import { Router } from "express";
-import { Role } from "@prisma/client";
-import { permit, protect } from "../middleware/auth.middleware.ts";
+import { protect } from "../middleware/auth.middleware.ts";
 import { getCurrentUser, userLogin, userRegister } from "../controllers/auth.controller.ts";
 
 const authRouter = Router();
@@ -12,6 +11,6 @@ authRouter.post("/register", userRegister);
 authRouter.post("/login", userLogin);
 
 // Protected route to get current logged-in user profile using valid JWT token.
-authRouter.get("/me", protect, permit(Role.ADMIN), getCurrentUser);
+authRouter.get("/me", protect, getCurrentUser);
 
 export default authRouter;

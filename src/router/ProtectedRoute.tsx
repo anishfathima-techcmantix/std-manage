@@ -1,6 +1,6 @@
 import React from "react";
 import { Spin } from "antd";
-import { UserRole } from "../types/auth.types";
+import { UserRole } from "../types/types";
 import { useAuth } from "../context/AuthContext";
 import { Navigate, Outlet } from "react-router-dom";
 import { APP_ROUTES } from "../constants/appRoutes.constants";
@@ -20,12 +20,14 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) 
     );
   }
 
+  // 2. If not logged in at all -> Login Page
   if (!currentUser) {
     return <Navigate to={APP_ROUTES.login} replace />;
   }
 
+  // 3. Logged in, but wrong role (e.g. STUDENT trying /admin/dashboard) -> NotFound (403)
   if (allowedRoles && !allowedRoles.includes(currentUser.role)) {
-    return <Navigate to={APP_ROUTES.notFound} state={{ status: 403 }} replace />;
+    return <Navigate to={APP_ROUTES.notFound || "/404"} state={{ status: 403 }} replace />;
   }
 
   return <Outlet />;

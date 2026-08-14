@@ -1,4 +1,4 @@
-import { User } from "../types/auth.types";
+import { User } from "../types/types";
 import { authService } from "../services/auth.service";
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 
@@ -32,10 +32,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
             if (storedToken) {
                 try {
-                    const response = await authService.getMe();
-                    if (response.currentUser) {
-                        setCurrentUser(response.currentUser);
-                        localStorage.setItem("currentUser", JSON.stringify(response.currentUser));
+                    const response: any = await authService.getMe();
+
+                    const userData =
+                        response.data?.currentUser ||
+                        response.data?.authenticatedUser ||
+                        response.data ||
+                        response.currentUser;
+
+                    if (userData) {
+                        setCurrentUser(userData);
+                    } else {
+                        logout();
                     }
                 } catch (error) {
                     logout();

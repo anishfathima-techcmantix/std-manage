@@ -1,3 +1,5 @@
+// Auth Types
+
 export type UserRole = "ADMIN" | "STUDENT";
 
 export interface Country {
