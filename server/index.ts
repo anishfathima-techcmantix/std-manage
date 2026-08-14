@@ -8,6 +8,7 @@ import authRoutes from "./routes/auth.route.ts";
 import logger from "./utils/logger.ts";
 import countryRouter from "./routes/countries.route.ts";
 import professionsRouter from "./routes/professions.route.ts";
+import chapterRouter from "./routes/chapter.route.ts";
 
 dotenv.config({
     path: path.resolve(process.cwd(), ".env"),
@@ -39,6 +40,7 @@ export async function createServer() {
     app.use('/api/auth', authRoutes);
     app.use('/api/countries', countryRouter);
     app.use('/api/professions', professionsRouter);
+    app.use('/api/chapters', chapterRouter);
 
     app.use("/api/*path", (req, res) => {
         logger.warn({ message: "API route not found", method: req.method, url: req.originalUrl });
